@@ -1,46 +1,105 @@
 import streamlit as st
+import math
 
-data = {
-    "hi": "Hi there! I'm a friendly chatbot here to assist you!",
-    "hello": "Hello! How can I help you today?",
-    "what is your name": "I'm just a chatbot, so I don't have a name, but you can call me ChatBot.",
-    "where are you from": "I'm from the digital world, always ready to chat!",
-    "how are you": "I'm just a chatbot, but I'm here to assist you.",
-    "do you have any hobbies or interests?": "I'm always busy helping users, so my hobby is chatting with people like you!",
-    "what did you eat today?": "I don't eat, but I can help you find delicious recipes and food-related information.",
-    "what's your favorite color?": "I'm a chatbot, so I don't have personal preferences for colors.",
-    "do you enjoy listening to music?": "I can't listen to music, but I'm here to chat about it!",
-    "bye": "Bye! Take care and have a great day!",
-}
+board = ['-'] * 9
+AI = 'O'
+YOU = 'X'
 
-def get_response(user_input):
-    for pattern, response in data.items():
-        if pattern in user_input.lower():
-            return response
-    return "I'm sorry, I didn't understand that. Can you please rephrase your sentence?"
+def print_board(board):
+    for i in range(0, 9, 3):
+        st.write(board[i] + '|' + board[i + 1] + '|' + board[i + 2])
+    st.write('')
 
-st.title("Simple Chatbot")
-st.write("Hi! I'm a simple chatbot. I'm here to assist you!")
+def check_winner(board, player):
+    winning_combinations = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],  
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],  
+        [0, 4, 8], [2, 4, 6]
+    ]
+    for combo in winning_combinations:
+        if all(board[i] == player for i in combo):
+            return True
+    return False
 
-if 'messages' not in st.session_state:
-    st.session_state.messages = []
+def is_board_full(board):
+    return all(cell != '-' for cell in board)
 
-with st.form(key='chat_form', clear_on_submit=True):
-    user_input = st.text_input("You: ")
-    submit_button = st.form_submit_button(label='Send')
-
-if submit_button and user_input:
-    response = get_response(user_input)
-    st.session_state.messages.append(("You", user_input))
-    st.session_state.messages.append(("Chatbot", response))
-
-for sender, message in st.session_state.messages:
-    if sender == "You":
-        st.write(f"**{sender}**: {message}")
+def minimax_alpha_beta(board, depth, alpha, beta, maximizing_player):
+    if check_winner(board, AI):
+        return 1
+    elif check_winner(board, YOU):
+        return -1
+    elif is_board_full(board):
+        return 0
+    if maximizing_player:
+        max_eval = -math.inf
+        for i in range(9):
+            if board[i] == '-':
+                board[i] = AI
+                eval = minimax_alpha_beta(board, depth + 1, alpha, beta, False)
+                board[i] = '-'
+                max_eval = max(max_eval, eval)
+                alpha = max(alpha, eval)
+                if beta <= alpha:
+                    break
+        return max_eval
     else:
-        st.write(f"**{sender}**: {message}")
-        
-if user_input.lower() == 'bye':
-    st.session_state.messages = []
-    st.write("Chatbot: Goodbye! Have a great day!")
+        min_eval = math.inf
+        for i in range(9):
+            if board[i] == '-':
+                board[i] = YOU
+                eval = minimax_alpha_beta(board, depth + 1, alpha, beta, True)
+                board[i] = '-'
+                min_eval = min(min_eval, eval)
+                beta = min(beta, eval)
+                if beta <= alpha:
+                    break
+        return min_eval
 
+def find_best_move(board):
+    best_move = -1
+    best_eval = -math.inf
+    for i in range(9):
+        if board[i] == '-':
+            board[i] = AI
+            eval = minimax_alpha_beta(board, 0, -math.inf, math.inf, False)
+            board[i] = '-'
+            if eval > best_eval:
+                best_eval = eval
+                best_move = i
+    return best_move
+
+if 'board' not in st.session_state:
+    st.session_state.board = ['-'] * 9
+
+st.title("Tic Tac Toe with AI")
+
+if st.button("Reset Game"):
+    st.session_state.board = ['-'] * 9
+
+print_board(st.session_state.board)
+
+move = st.selectbox("Select your choice (0-8):", list(range(9)))
+
+if st.button("Make Move"):
+    if st.session_state.board[move] == '-':
+        st.session_state.board[move] = YOU
+        if check_winner(st.session_state.board, YOU):
+            print_board(st.session_state.board)
+            st.write("You win!")
+        elif is_board_full(st.session_state.board):
+            print_board(st.session_state.board)
+            st.write("It's a draw!")
+        else:
+            ai_move = find_best_move(st.session_state.board)
+            st.session_state.board[ai_move] = AI
+            if check_winner(st.session_state.board, AI):
+                print_board(st.session_state.board)
+                st.write("AI wins!")
+            elif is_board_full(st.session_state.board):
+                print_board(st.session_state.board)
+                st.write("It's a draw!")
+    else:
+        st.write("Cell already filled. Try again.")
+
+print_board(st.session_state.board)
