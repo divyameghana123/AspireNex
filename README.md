@@ -45,19 +45,20 @@ Example of Execution Flow:
 
 This approach ensures a robust and efficient Tic-Tac-Toe game with a competent AI opponent.
 
-DEPLOYMENT:
-
 ## Installation
-
+## Deployment
 
 1.Clone the Repository
+   
    ```sh
    git clone <your-repository-url>
    cd <your-repository-directory>
+
 2.Create a virtual environment (optional but recommended):
 
 python -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+
 3.Install the required packages:
 
 4.pip install streamlit
