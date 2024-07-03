@@ -1,7 +1,9 @@
 TASK 1 - CHATBOT WITH RULE-BASED RESPONSES
 
 Build a simple chatbot that responds to user inputs based on predefined rules. Use if-else statements or pattern matching techniques to identify user queries and provide appropriate responses. This task will let us understand about your knowledge of natural language processing and conversation flow.
+
 Explanation:
+
 1.Pattern Matching:
 
 Patterns are defined using regular expressions (patterns dictionary) to match against user input.
